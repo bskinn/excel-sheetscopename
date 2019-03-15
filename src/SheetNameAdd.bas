@@ -41,21 +41,30 @@ Function cleanNameName(ByVal n As String) As String
     '   1. Start with underscore or letter
     '   2. Must not have spaces or other invalid characters
     '   3. Must not conflict with Excel names
+    '   4. Must not start with a valid RC-style reference
     '
-    ' This function takes care of (1) and (2)
+    ' This function takes care of (1) and (2) and (4)
     '
     
     Dim iter As Long, c As String
+    Dim rxRC As New RegExp
+    
+    With rxRC
+        .Global = False
+        .MultiLine = False
+        .IgnoreCase = True
+        .Pattern = "^([RC]|RC)0*[1-9]"
+    End With
     
     cleanNameName = n
     
-    ' Fix (1) if needed
+    ' Fix (1) if needed by prepending underscore
     c = Mid(cleanNameName, 1, 1)
     If Not (isCharLetter(c) Or isCharUnderscore(c)) Then
         cleanNameName = "_" & cleanNameName
     End If
     
-    ' Fix (2) if needed
+    ' Fix (2) if needed by substituting underscores
     For iter = 1 To Len(cleanNameName)
         c = Mid(cleanNameName, iter, 1)
         
@@ -68,6 +77,11 @@ Function cleanNameName(ByVal n As String) As String
         End If
             
     Next iter
+    
+    ' Fix (4) if needed by prepending underscore
+    If rxRC.Test(cleanNameName) Then
+        cleanNameName = "_" & cleanNameName
+    End If
 
 End Function
 
