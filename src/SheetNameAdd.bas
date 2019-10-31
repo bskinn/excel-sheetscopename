@@ -10,14 +10,26 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
     Dim wkSht As Worksheet
     Dim cel As Range
     Dim newName As String
+    Dim wkName As Name
     
     Dim errNum As Long
     
     Set wkSht = ActiveSheet
     
     For Each cel In Selection
+        ' Define the new name
         newName = cleanNameName(cel.Offset(0, -1))
     
+        ' Remove any old Names assigned to the cell
+        ' May turn out this is undesirable;
+        ' usage will see
+        For Each wkName In Names
+            If isNameSheetScopeAndOnCell(wkName, cel) Then
+            wkName.Delete
+            End If
+        Next wkName
+    
+        ' Apply the new name, revising if needed
         On Error Resume Next
             wkSht.Names.Add newName, cel
         errNum = Err.Number: Err.Clear: On Error GoTo 0
@@ -35,6 +47,20 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
     Next cel
     
 End Sub
+
+Function isNameSheetScopeAndOnCell(n As Name, c As Range) As Boolean
+    ' Return True if:
+    '  1) n is scoped to the worksheet, not workbook; and
+    '  2) refers exactly to just the cell c
+    
+    If InStr(n, "!") < 1 Then
+        isNameSheetScopeAndOnCell = False
+        Exit Function
+    End If
+    
+    isNameSheetScopeAndOnCell = (c.Address = Mid(n.RefersTo, 1 + InStr(n.RefersTo, "!")))
+    
+End Function
 
 Function cleanNameName(ByVal n As String) As String
     ' The names of Names must:
