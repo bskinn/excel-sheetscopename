@@ -17,6 +17,14 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
     Set wkSht = ActiveSheet
     
     For Each cel In Selection
+        If IsEmpty(cel.Offset(0, -1)) Then
+            MsgBox "No text in " & cel.Offset(0, -1).Address & "!" & _
+                    Chr(10) & Chr(10) & _
+                    "Skipping.", vbOKOnly + vbInformation, _
+                    "Skipping Empty Name Cell"
+            GoTo Skip_Cell
+        End If
+    
         ' Define the new name
         newName = cleanNameName(cel.Offset(0, -1))
     
@@ -44,6 +52,7 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
             Err.Raise errNum
         End If
         
+Skip_Cell:
     Next cel
     
 End Sub
