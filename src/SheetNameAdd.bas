@@ -1,6 +1,46 @@
 Attribute VB_Name = "SheetNameAdd"
 Option Explicit
 
+Public Sub clearCellNames()
+Attribute clearCellNames.VB_ProcData.VB_Invoke_Func = "D\n14"
+    ' Clears all Names defined to point to exactly the currently
+    ' selected cell
+    
+    Dim wkCel As Range, wkNames As Names, wkRange As Range
+    Dim iter As Long, errnum As Long
+    
+    For Each wkCel In Selection
+        Set wkNames = wkCel.Parent.Names  ' Worksheet level
+        For iter = wkNames.Count To 1 Step -1
+            ' Name could be a constant; if anything errors here, just skip
+            On Error Resume Next
+                Set wkRange = wkNames(iter).RefersToRange
+            errnum = Err.Number: Err.Clear: On Error GoTo 0
+            
+            If errnum = 0 Then
+                If wkNames(iter).RefersToRange.Address = wkCel.Address Then
+                    wkNames(iter).Delete
+                End If
+            End If
+        Next iter
+        
+        Set wkNames = wkCel.Parent.Parent.Names  ' Workbook level
+        For iter = wkNames.Count To 1 Step -1
+            ' Name could be a constant; if anything errors here, just skip
+            On Error Resume Next
+                Set wkRange = wkNames(iter).RefersToRange
+            errnum = Err.Number: Err.Clear: On Error GoTo 0
+            
+            If errnum = 0 Then
+                If wkNames(iter).RefersToRange.Address = wkCel.Address Then
+                    wkNames(iter).Delete
+                End If
+            End If
+        Next iter
+    Next wkCel
+        
+End Sub
+
 Public Sub addSheetScopedName()
 Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
     ' Adds Name to *sheet* scope for the selected cell,
@@ -12,7 +52,7 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
     Dim newName As String
     Dim wkName As Name
     
-    Dim errNum As Long
+    Dim errnum As Long
     
     Set wkSht = ActiveSheet
     
@@ -40,16 +80,16 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
         ' Apply the new name, revising if needed
         On Error Resume Next
             wkSht.Names.Add newName, cel
-        errNum = Err.Number: Err.Clear: On Error GoTo 0
-        If errNum = 1004 Then
+        errnum = Err.Number: Err.Clear: On Error GoTo 0
+        If errnum = 1004 Then
             ' Invalid name, append an underscore. This handles
             ' (3) from the 'docstring' of cleanNameName.
             wkSht.Names.Add newName & "_", cel
-        ElseIf errNum > 0 And errNum <> 40040 Then
+        ElseIf errnum > 0 And errnum <> 40040 Then
             ' 40040 is apparently set as Err.Number when Name
             ' creation succeeds...?
             ' Anyways, this re-raises any unexpected errors.
-            Err.Raise errNum
+            Err.Raise errnum
         End If
         
 Skip_Cell:
