@@ -118,7 +118,9 @@ Function cleanNameName(ByVal n As String) As String
     '   3. Must not conflict with Excel names
     '   4. Must not start with a valid RC-style reference
     '
-    ' This function takes care of (1) and (2) and (4)
+    ' This function takes care of (1) and (2) and (4).
+    ' It also specifically swaps 'dol' in for '$',
+    '  as a readability convenience.
     '
     
     Dim iter As Long, c As String
@@ -132,6 +134,11 @@ Function cleanNameName(ByVal n As String) As String
     End With
     
     cleanNameName = n
+    
+    ' Swap all dollar signs
+    Do While InStr(cleanNameName, "$") > 0
+        cleanNameName = swapChar(cleanNameName, InStr(cleanNameName, "$"), "dol")
+    Loop
     
     ' Fix (1) if needed by prepending underscore
     c = Mid(cleanNameName, 1, 1)
