@@ -73,7 +73,7 @@ Attribute addSheetScopedName.VB_ProcData.VB_Invoke_Func = "N\n14"
         ' usage will see
         For Each wkName In Names
             If isNameSheetScopeAndOnCell(wkName, cel) Then
-            wkName.Delete
+                wkName.Delete
             End If
         Next wkName
     
@@ -107,7 +107,9 @@ Function isNameSheetScopeAndOnCell(n As Name, c As Range) As Boolean
         Exit Function
     End If
     
-    isNameSheetScopeAndOnCell = (c.Address = Mid(n.RefersTo, 1 + InStr(n.RefersTo, "!")))
+    ' Match happens if address matches and both ranges are on the same worksheet
+    isNameSheetScopeAndOnCell = c.Address = Mid(n.RefersTo, 1 + InStr(n.RefersTo, "!")) _
+                And c.Worksheet Is n.RefersToRange.Worksheet
     
 End Function
 
